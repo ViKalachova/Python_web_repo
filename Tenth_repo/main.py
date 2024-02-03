@@ -6,8 +6,10 @@ import asyncio
 from datetime import datetime, timedelta
 from time import time
 
+
 class HttpError(Exception):
     pass
+
 
 async def request(url):
     async with aiohttp.ClientSession() as session:
@@ -46,10 +48,8 @@ async def main(qty):
         print(err)
 
 
-
 if __name__ == "__main__":
     if platform.system() == 'Windows':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     r = asyncio.run(main(sys.argv[1]))
     print(r)
-
