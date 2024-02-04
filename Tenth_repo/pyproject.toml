@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "tenth-repo"
+version = "0.1.0"
+description = ""
+authors = ["ViKalachova <142012394+ViKalachova@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiohttp = "^3.9.3"
+asyncio = "^3.4.3"
+logging = "^0.4.9.6"
+websockets = "^12.0"
+names = "^0.3.0"
+aiopath = "^0.6"
+aiofile = "^3.8.8"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
