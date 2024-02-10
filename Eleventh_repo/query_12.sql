@@ -1,6 +1,10 @@
 --Оцінки студентів у певній групі з певного предмета на останньому занятті.
 
-SELECT students.fullname, grades.grade
+SELECT students.fullname,
+        groups.group_name,
+        subjects.subject_name,
+        grades.grade,
+        grades.received_date
 FROM students
 JOIN grades ON students.id = grades.student_id
 JOIN subjects ON grades.subject_id = subjects.id

@@ -1,6 +1,6 @@
 --Список курсів, які певному студенту читає певний викладач.
 
-SELECT subjects.subject_name
+SELECT students.fullname, professors.fullname, subjects.subject_name
 FROM students
 JOIN grades ON students.id = grades.student_id
 JOIN subjects ON grades.subject_id = subjects.id

@@ -1,6 +1,6 @@
 --Середній бал, який певний викладач ставить певному студентові.
 
-SELECT AVG(grades.grade) AS average_grade
+SELECT students.fullname, professors.fullname, AVG(grades.grade) AS average_grade
 FROM students
 JOIN grades ON students.id = grades.student_id
 JOIN subjects ON grades.subject_id = subjects.id

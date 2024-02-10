@@ -1,6 +1,9 @@
 --Знайти оцінки студентів у окремій групі з певного предмета.
 
-SELECT students.fullname, grades.grade
+SELECT  students.fullname,
+        groups.group_name,
+        subjects.subject_name,
+        grades.grade
 FROM students
 JOIN grades ON students.id = grades.student_id
 JOIN subjects ON grades.subject_id = subjects.id
