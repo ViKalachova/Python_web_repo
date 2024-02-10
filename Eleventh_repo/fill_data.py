@@ -2,14 +2,14 @@ import sqlite3
 from faker import Faker
 import random
 
-fake = Faker('uk-Ua')
+fake = Faker()
 
 conn = sqlite3.connect('grades.db')
 cursor = conn.cursor()
 
 # Додамо групи
 for _ in range(3):
-    group = fake.word(ext_word_list=['Група A', 'Група Б', 'Група В'])
+    group = fake.word()
     cursor.execute('INSERT INTO groups (group_name) VALUES (?)', (group,))
 
 # Додамо викладачів
@@ -18,7 +18,7 @@ for _ in range(5):
 
 # Додамо предмети
 for _ in range(5):
-    subjects = fake.word(ext_word_list=['Вища математика', 'Фінанси', 'Страхування', 'Історія України', 'Маркетинг'])
+    subjects = fake.word()
     professor = random.randint(1, 5)
     cursor.execute('INSERT INTO subjects (subject_name, professor_id) VALUES (?, ?)', (subjects, professor))
 
