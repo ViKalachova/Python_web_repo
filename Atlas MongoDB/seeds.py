@@ -20,7 +20,8 @@ if __name__ == '__main__':
     with open('quotes.json', encoding='utf-8') as fd:
         data = json.load(fd)
         for el in data:
-            author, *_ = Author(fullname=el.get('author'))
+            author_name = el.get('author')
+            author = Author.objects.get(fullname=author_name)
             quote = Quote(quote=el.get('quote'), tags=el.get('tags'), author=author)
             quote.save()
             

@@ -4,6 +4,7 @@ import redis
 from redis_lru import RedisLRU
 
 from models import Author, Quote
+import connect
 
 client = redis.StrictRedis(host="localhost", port=6379, password=None)
 cache = RedisLRU(client)
@@ -15,6 +16,7 @@ def find_by_tag(tag: str) -> list[str | None]:
     result = [q.quote for q in quotes]
     return result
 
+
 @cache
 def find_by_tags(tags: str) -> list[list[Any]]:
     all_tags = tags.split(',')
@@ -24,8 +26,9 @@ def find_by_tags(tags: str) -> list[list[Any]]:
         result.append([q.quote for q in quotes])
     return result
 
+
 @cache
-def find_by_author(author: str) -> list[list[Any]]:
+def find_by_author(author: str) -> list[Any]:
     authors = Author.objects(fullname__iregex=author)
     result = []
     for a in authors:
@@ -34,19 +37,18 @@ def find_by_author(author: str) -> list[list[Any]]:
     return result
 
 
-
 while True:
-    user_input = input("Введіть команду (name/tag/tags/exit): ").strip().split(':')
+    user_input = input("Введіть команду (name/tag/tags/exit): ").split(':')
     command = user_input[0]
-    value = user_input[1]
     if command == 'exit':
+        print('Goodbye!')
         break
     elif command == 'name':
-        result = find_by_author(value)
-        print(f'{value}: {result}')
+        result = find_by_author(user_input[1])
+        print(f'{user_input[1]}: {result}')
     elif command == 'tag':
-        result = find_by_tag(value)
-        print(f'{value}: {result}')
+        result = find_by_tag(user_input[1])
+        print(f'{user_input[1]}: {result}')
     elif command == 'tags':
-        result = find_by_tags(value)
-        print(f'{value}: {result}')
+        result = find_by_tags(user_input[1])
+        print(f'{user_input[1]}: {result}')
