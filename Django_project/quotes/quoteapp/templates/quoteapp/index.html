@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Perfect quotes</title>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"/>
+</head>
+<body>
+<main class="container">
+    <nav style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px">
+        {% if user.is_authenticated %}
+        <ul>
+            <li><a href="{% url 'quoteapp:author' %}" role="button">Add author</a></li>
+            <li><a href="{% url 'quoteapp:tag' %}" role="button">Add tag</a></li>
+            <li><a href="{% url 'quoteapp:quote' %}" role="button">Add quote</a></li>
+        </ul>
+        <ul>
+            <li>Welcome <b>{{ user.username }}!</b></li>
+            <li><a href="{% url 'users:logout' %}" role="button">Logout</a></li>
+        </ul>
+        {% else %}
+        <ul>
+            <li><a href="{% url 'users:signup' %}" role="button">Sign Up</a></li>
+            <li><a href="{% url 'users:login' %}" role="button">Login</a></li>
+        </ul>
+        {% endif %}
+    </nav>
+
+    <div>
+        <form action="{% url 'quoteapp:scrape_and_add' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Download all articles</button>
+        </form>
+    </div>
+
+    <div style="text-align: center;">
+        {% for quote in quotes %}
+        <ul>
+            <a href="{% url 'quoteapp:author_detail' quote.artist.id %}" role="button">{{ quote.artist.fullname }}</a>
+            <a href="{% url 'quoteapp:detail' quote.id %}" role="button" class="outline"> {{ quote.quote|truncatechars:95 }} </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'quoteapp:delete' quote.id %}" role="button" class="contrast"> Delete quote </a>
+            {% endif %}
+        </ul>
+        {% endfor %}
+    </div>
+
+</main>
+</body>
+</html>
