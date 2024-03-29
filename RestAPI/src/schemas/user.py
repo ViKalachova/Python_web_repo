@@ -1,22 +1,26 @@
 from pydantic import BaseModel, EmailStr, Field, PastDate
 
+from src.entity.models import Role
+
 
 class UserSchema(BaseModel):
-    name: str = Field(min_length=2, max_length=50)
-    surname: str = Field(min_length=2, max_length=50)
+    username: str = Field(min_length=3, max_length=50)
     email: EmailStr
-    phone: str = Field()
-    birthday: PastDate
-    description: str = Field(max_length=250)
+    password: str = Field(min_length=6, max_length=8)
+
 
 class UserResponse(BaseModel):
     id: int = 1
-    name: str
-    surname: str
-    email: EmailStr
-    phone: str
-    birthday: PastDate
-    description: str
+    username: str
+    email: str
+    avatar: str
+    role: Role
 
     class Config:
         from_attributes = True
+
+
+class TokenSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = 'bearer'
