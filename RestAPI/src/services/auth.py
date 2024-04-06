@@ -1,6 +1,8 @@
+import pickle
 from datetime import datetime, timedelta
 from typing import Optional
 
+import redis
 from jose import JWTError, jwt
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
@@ -9,13 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
 from src.repository import users as repository_users
+from src.conf.config import config
 
 
 class Auth:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    SECRET_KEY = "e4f5a6b7c8d9e0f1a2b3c4d53f8a1b2c9d0e6f7a8b9c0d1e2f3a4b5c6d7e8f9"  # TODO прибрати у ENV файл
-    ALGORITHM = "HS256"
+    SECRET_KEY = config.SECRET_KEY_JWT
+    ALGORITHM = config.ALGORITHM
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+    cache = redis.Redis(host=config.REDIS_DOMAIN, port=config.REDIS_PORT, db=0, password=config.REDIS_PASSWORD)
 
     def verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
@@ -74,10 +78,35 @@ class Auth:
         except JWTError as e:
             raise credentials_exception
 
-        user = await repository_users.get_user_by_email(email, db)
+        user_hash = str(email)
+        user = self.cache.get(user_hash)
+
         if user is None:
-            raise credentials_exception
+            user = await repository_users.get_user_by_email(email, db)
+            if user is None:
+                raise credentials_exception
+            self.cache.set(user_hash, pickle.dumps(user))
+            self.cache.expire(user_hash, 300)
+        else:
+            user = pickle.loads(user)
         return user
+
+    def create_email_token(self, data: dict):
+        to_encode = data.copy()
+        expire = datetime.utcnow() + timedelta(days=1)
+        to_encode.update({"iat": datetime.utcnow(), "exp": expire})
+        token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        return token
+
+    async def get_email_from_token(self, token: str):
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            email = payload["sub"]
+            return email
+        except JWTError as e:
+            print(e)
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail="Invalid token for email verification")
 
 
 auth_service = Auth()

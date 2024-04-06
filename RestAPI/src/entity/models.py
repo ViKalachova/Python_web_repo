@@ -2,7 +2,7 @@ import enum
 from datetime import date
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Date, Integer, ForeignKey, DateTime, func, Enum
+from sqlalchemy import String, Date, Integer, ForeignKey, DateTime, func, Enum, Boolean
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -43,3 +43,4 @@ class User(Base):
     created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
     updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
     role: Mapped[Enum] = mapped_column('role', Enum(Role), default=Role.user, nullable=True)
+    confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
