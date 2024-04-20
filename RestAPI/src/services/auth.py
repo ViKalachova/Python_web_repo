@@ -22,13 +22,39 @@ class Auth:
     cache = redis.Redis(host=config.REDIS_DOMAIN, port=config.REDIS_PORT, db=0, password=config.REDIS_PASSWORD)
 
     def verify_password(self, plain_password, hashed_password):
+        """
+        The verify_password function takes a plain-text password and the hashed version of that password,
+            and returns True if they match, False otherwise. This is used to verify that the user's login
+            credentials are correct.
+        
+        :param self: Represent the instance of the class
+        :param plain_password: Pass the password that is entered by the user
+        :param hashed_password: Compare the hashed password in the database with the plain text password entered by user
+        :return: True if the password is correct and false otherwise
+        """
         return self.pwd_context.verify(plain_password, hashed_password)
 
     def get_password_hash(self, password: str):
+        """
+        The get_password_hash function takes a password as input and returns the hash of that password.
+            The function uses the pwd_context object to generate a hash from the given password.
+        
+        :param self: Represent the instance of the class
+        :param password: str: Pass in the password that is being hashed
+        :return: A hash of the password
+        """
         return self.pwd_context.hash(password)
 
     # define a function to generate a new access token
     async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
+        """
+        The create_access_token function creates a new access token for the user.
+        
+        :param self: Represent the instance of the class
+        :param data: dict: Pass the data that will be encoded in the jwt
+        :param expires_delta: Optional[float]: Set the expiration time of the token
+        :return: An encoded access token for the user
+        """
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
@@ -40,6 +66,14 @@ class Auth:
 
     # define a function to generate a new refresh token
     async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
+        """
+        The create_refresh_token function creates a refresh token for the user.
+        
+        :param self: Represent the instance of the class
+        :param data: dict: A dictionary containing the user's id and username
+        :param expires_delta: Optional[float]: Set the time for which the refresh token is valid
+        :return: A refresh token
+        """
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
@@ -50,6 +84,15 @@ class Auth:
         return encoded_refresh_token
 
     async def decode_refresh_token(self, refresh_token: str):
+        """
+        The decode_refresh_token function takes a refresh token and decodes it.
+            If the scope is 'refresh_token', then we return the email address of the user.
+            Otherwise, we raise an HTTPException with status code 401 (UNAUTHORIZED).
+        
+        :param self: Represent the instance of the class
+        :param refresh_token: str: Pass the refresh token to the function
+        :return: The email of the user, which is then used to get the user from the database
+        """
         try:
             payload = jwt.decode(refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             if payload['scope'] == 'refresh_token':
@@ -60,6 +103,16 @@ class Auth:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
 
     async def get_current_user(self, token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+        """
+        The get_current_user function is a dependency that will be called by FastAPI to retrieve the current user.
+        It uses the token in the Authorization header of each request to validate and decode it, then returns an object with
+        the information about this user.
+        
+        :param self: Represent the instance of the class
+        :param token: str: Pass the token to the function
+        :param db: AsyncSession: Get the database connection and pass it to the repository layer
+        :return: A user object
+        """
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -92,6 +145,14 @@ class Auth:
         return user
 
     def create_email_token(self, data: dict):
+        """
+        The create_email_token function takes a dictionary of data and returns a JWT token.
+        The token is encoded with the SECRET_KEY and ALGORITHM defined in the class.
+        
+        :param self: Represent the instance of the class
+        :param data: dict: Pass the data to be encoded in the token
+        :return: A jwt token
+        """
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(days=1)
         to_encode.update({"iat": datetime.utcnow(), "exp": expire})
@@ -99,6 +160,13 @@ class Auth:
         return token
 
     async def get_email_from_token(self, token: str):
+        """
+        The get_email_from_token function takes a token as an argument and returns the email address associated with that token.
+        
+        :param self: Represent the instance of the class
+        :param token: str: Pass the token to the function
+        :return: The email address of the user who is trying to verify their account
+        """
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             email = payload["sub"]
